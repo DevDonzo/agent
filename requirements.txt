@@ -1,0 +1,5 @@
+strands-agents
+strands-agents-tools 
+requests
+requests-oauthlib
+boto3
