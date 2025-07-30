@@ -3,11 +3,14 @@ import boto3
 import json
 import requests
 import time
+import os
 import datetime
 from requests_oauthlib import OAuth1
 from botocore.exceptions import ClientError
 
 knowledge_base_id = "WSGOBUXGKF"
+
+SERPER_API_KEY = os.environ.get("SERPER_API_KEY")  
 
 def get_secret():
     secret_name = "xAPICreds"
@@ -260,3 +263,38 @@ def post_tweet(action: str, tweet_text: str = "", tweet_id: str = "") -> str:
 
     except Exception as e:
         return f"Error: {str(e)}"
+
+@tool
+def websearch(query: str) -> str:
+    """
+    Searches Google using Serper.dev and returns the top few results.
+    """
+    if not SERPER_API_KEY:
+        return "Missing API key for web search."
+
+    headers = {
+        "X-API-KEY": SERPER_API_KEY,
+        "Content-Type": "application/json"
+    }
+
+    payload = { "q": query }
+
+    response = requests.post("https://google.serper.dev/search", headers=headers, json=payload)
+
+    if response.status_code != 200:
+        return f"Search failed. Status: {response.status_code}"
+
+    data = response.json()
+    results = data.get("organic", [])[:3]
+
+    if not results:
+        return "No results found."
+
+    output = []
+    for result in results:
+        title = result.get("title")
+        link = result.get("link")
+        snippet = result.get("snippet")
+        output.append(f"**{title}**\n{snippet}\n{link}")
+
+    return "\n\n".join(output)

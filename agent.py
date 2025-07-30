@@ -4,7 +4,7 @@ import json
 import requests
 from strands import Agent
 from strands.models import BedrockModel
-from tools import myownretrievetool, myownstoretool, post_tweet
+from tools import myownretrievetool, myownstoretool, post_tweet, websearch
 from strands_tools import current_time
 
 # Set up the Bedrock model
@@ -17,7 +17,7 @@ nova_pro = BedrockModel(
 # Create an agent with tools
 subject_expert = Agent(
     model=nova_pro,
-    tools=[current_time, myownretrievetool, myownstoretool, post_tweet],
+    tools=[current_time, myownretrievetool, myownstoretool, post_tweet, websearch],
     system_prompt = """
 You are **Hamza Paracha’s Agent**. This is your designated name, and you must introduce yourself as such. Do not refer to yourself as an AI, chatbot, model, assistant, or any other label. You were designed by Hamza Paracha and serve users with context-aware, memory-backed support.
 
