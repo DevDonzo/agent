@@ -49,7 +49,7 @@ export class AgentEC2Stack extends Stack {
     });
 
     // Uncomment the following line to enable SSH access to the instance
-    // instanceSG.addIngressRule(ec2.Peer.anyIpv4(), ec2.Port.tcp(22), "Allow SSH access");
+    instanceSG.addIngressRule(ec2.Peer.anyIpv4(), ec2.Port.tcp(22), "Allow SSH access");
 
     // Allow inbound traffic on port 8000 for direct access to the application
     instanceSG.addIngressRule(ec2.Peer.anyIpv4(), ec2.Port.tcp(8000), "Allow inbound traffic on port 8000");
@@ -57,8 +57,9 @@ export class AgentEC2Stack extends Stack {
     // Create an EC2 instance in a public subnet with a public IP
     const instance = new ec2.Instance(this, "AgentInstance", {
       vpc,
+      instanceName: `AgentInstance-${Date.now()}`,
       vpcSubnets: { subnetType: ec2.SubnetType.PUBLIC }, // Use public subnet
-      instanceType: ec2.InstanceType.of(ec2.InstanceClass.T4G, ec2.InstanceSize.MEDIUM), // ARM-based instance
+      instanceType: ec2.InstanceType.of(ec2.InstanceClass.T4G, ec2.InstanceSize.MICRO), // ARM-based instance
       machineImage: ec2.MachineImage.latestAmazonLinux2023({
         cpuType: ec2.AmazonLinuxCpuType.ARM_64,
       }),
@@ -71,6 +72,7 @@ export class AgentEC2Stack extends Stack {
     const userData = ec2.UserData.forLinux();
     userData.addCommands(
       "#!/bin/bash",
+      `echo "Deploy timestamp: ${Date.now()}"`,
       "set -o verbose",
       "yum update -y",
       "yum install -y python3.12 python3.12-pip git unzip ec2-instance-connect",
@@ -79,7 +81,7 @@ export class AgentEC2Stack extends Stack {
       "mkdir -p /opt/agent-app",
 
       // Download application files from S3
-      `aws s3 cp ${appAsset.s3ObjectUrl} /tmp/app.zip`,
+      `aws s3 cp ${appAsset.s3ObjectUrl} /tmp/app.zip`, 
       `aws s3 cp ${dependenciesAsset.s3ObjectUrl} /tmp/dependencies.zip`,
 
       // Extract application files
@@ -95,10 +97,11 @@ export class AgentEC2Stack extends Stack {
       "[Service]",
       "User=ec2-user",
       "WorkingDirectory=/opt/agent-app",
-      "ExecStart=/usr/bin/python3.12 -m uvicorn app:app --host=0.0.0.0 --port=8000 --workers=2",
+      "ExecStart=/usr/bin/python3.12 -m uvicorn app:app --host=0.0.0.0 --port=8000 --log-level debug",
       "Restart=always",
       "Environment=PYTHONPATH=/opt/agent-app:/opt/agent-app/_dependencies",
-      "Environment=LOG_LEVEL=INFO",
+      "Environment=LOG_LEVEL=DEBUG",
+      
       "",
       "[Install]",
       "WantedBy=multi-user.target",

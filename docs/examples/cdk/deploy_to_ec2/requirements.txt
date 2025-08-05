@@ -3,3 +3,7 @@ uvicorn==0.34.2
 pydantic==2.11.4
 strands-agents
 strands-agents-tools
+requests
+requests-oauthlib
+boto3
+python-dotenv
