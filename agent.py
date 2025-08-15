@@ -6,21 +6,12 @@ from tools import myownretrievetool, myownstoretool, post_tweet
 from mcp.client.sse import sse_client
 from strands.tools.mcp import MCPClient
 
-# Optional: enable for local debugging
-# logging.getLogger("strands").setLevel(logging.DEBUG)
-# logging.basicConfig(
-#     format="%(levelname)s | %(name)s | %(message)s", 
-#     handlers=[logging.StreamHandler()]
-# )
-
-# Set up Bedrock model
 nova_pro = BedrockModel(
     model_id="amazon.nova-lite-v1:0",
     region_name="us-east-1",
     temperature=0.7
 )
 
-# Create the agent
 subject_expert = Agent(
     model=nova_pro,
     tools=[myownretrievetool, myownstoretool, post_tweet],
@@ -53,7 +44,6 @@ Always store new personal information you learn, and reference stored informatio
 """
 )
 
-# 🔥 Lambda entry point
 def lambda_handler(event, context):
     try:
         # If triggered via API Gateway HTTP API
