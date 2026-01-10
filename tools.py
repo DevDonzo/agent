@@ -6,12 +6,15 @@ import time
 import datetime
 from requests_oauthlib import OAuth1
 from botocore.exceptions import ClientError
+from dotenv import load_dotenv
 
-knowledge_base_id = "WSGOBUXGKF"
+load_dotenv()
+
+knowledge_base_id = os.getenv("KNOWLEDGE_BASE_ID")
 
 def get_secret():
     secret_name = "xAPICreds"
-    region_name = "us-east-1"
+    region_name = os.getenv("AWS_REGION", "us-east-1")
 
     session = boto3.session.Session()
     client = session.client(
@@ -45,7 +48,7 @@ def myownretrievetool(query: str = None, type: str = "memory", category: str = N
     try:
         # Query Bedrock Knowledge Base
         if query:
-            client = boto3.client('bedrock-agent-runtime', region_name='us-east-1')
+            client = boto3.client('bedrock-agent-runtime', region_name=os.getenv("AWS_REGION", "us-east-1"))
             kb_response = client.retrieve(
                 knowledgeBaseId=knowledge_base_id,
                 retrievalQuery={'text': query}
@@ -110,7 +113,7 @@ def myownstoretool(content: str, type: str = "memory", category: str = None, key
     """
     try:
         # Create DynamoDB client
-        dynamodb = boto3.resource('dynamodb', region_name='us-east-1')
+        dynamodb = boto3.resource('dynamodb', region_name=os.getenv("AWS_REGION", "us-east-1"))
         table = dynamodb.Table('strands_memory')
         
         timestamp = int(time.time() * 1000)

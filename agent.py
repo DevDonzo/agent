@@ -4,7 +4,6 @@ from tools import myownretrievetool, myownstoretool, post_tweet
 from strands_tools import retrieve, current_time, memory, use_llm 
 import logging
 from mcp.client.sse import sse_client
-from strands import Agent
 from strands.tools.mcp import MCPClient
 
 
